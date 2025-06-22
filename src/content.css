@@ -1,0 +1,76 @@
+/* MURAi Extension Content Styles */
+
+/* Asterisk style - individual letters */
+.murai-letter {
+  color: #ff4444 !important;
+  font-weight: bold !important;
+  text-shadow: 0 0 2px rgba(255, 68, 68, 0.5) !important;
+  animation: murai-pulse 1.5s ease-in-out infinite alternate !important;
+}
+
+/* Blur style */
+.murai-blur {
+  filter: blur(3px) !important;
+  transition: filter 0.3s ease !important;
+  cursor: pointer !important;
+}
+
+.murai-blur:hover {
+  filter: blur(0px) !important;
+}
+
+/* Highlight style */
+.murai-highlight {
+  background-color: var(--murai-highlight-color, #ffeb3b) !important;
+  color: #000 !important;
+  padding: 1px 2px !important;
+  border-radius: 2px !important;
+  font-weight: bold !important;
+  box-shadow: 0 0 4px rgba(255, 235, 59, 0.6) !important;
+}
+
+/* Pulse animation for asterisk style */
+@keyframes murai-pulse {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0.7;
+    transform: scale(1.1);
+  }
+}
+
+/* Ensure MURAi styles take precedence */
+.murai-letter,
+.murai-blur,
+.murai-highlight {
+  all: unset !important;
+  display: inline !important;
+  font-family: inherit !important;
+  font-size: inherit !important;
+  line-height: inherit !important;
+}
+
+/* Re-apply specific styles after reset */
+.murai-letter {
+  color: #ff4444 !important;
+  font-weight: bold !important;
+  text-shadow: 0 0 2px rgba(255, 68, 68, 0.5) !important;
+  animation: murai-pulse 1.5s ease-in-out infinite alternate !important;
+}
+
+.murai-blur {
+  filter: blur(3px) !important;
+  transition: filter 0.3s ease !important;
+  cursor: pointer !important;
+}
+
+.murai-highlight {
+  background-color: var(--murai-highlight-color, #ffeb3b) !important;
+  color: #000 !important;
+  padding: 1px 2px !important;
+  border-radius: 2px !important;
+  font-weight: bold !important;
+  box-shadow: 0 0 4px rgba(255, 235, 59, 0.6) !important;
+} 

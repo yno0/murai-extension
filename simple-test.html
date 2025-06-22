@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple MURAi Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+        }
+        .highlight {
+            background-color: #fff3cd;
+            padding: 10px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Simple MURAi Extension Test</h1>
+    
+    <div class="highlight">
+        <h3>Instructions:</h3>
+        <ol>
+            <li>Make sure the MURAi extension is loaded in Chrome</li>
+            <li>Open DevTools Console (F12)</li>
+            <li>Look for "MURAi" logs in the console</li>
+            <li>The words below should be highlighted if the extension is working</li>
+        </ol>
+    </div>
+
+    <div class="test-section">
+        <h3>Test 1: Basic Terms</h3>
+        <p>This paragraph contains the word gago.</p>
+        <p>This paragraph contains the word haop.</p>
+        <p>This paragraph contains the word putangina.</p>
+    </div>
+
+    <div class="test-section">
+        <h3>Test 2: Mixed Content</h3>
+        <p>Here is some normal text with the word gago mixed in.</p>
+        <p>Another sentence with haop in the middle.</p>
+        <p>And a sentence ending with putangina.</p>
+    </div>
+
+    <div class="test-section">
+        <h3>Test 3: Normal Text (Should not be highlighted)</h3>
+        <p>This paragraph contains only normal words like hello, world, test, content.</p>
+        <p>No offensive terms should be detected here.</p>
+    </div>
+
+    <div class="highlight">
+        <h3>Expected Console Output:</h3>
+        <ul>
+            <li>"=== MURAi content script injected ==="</li>
+            <li>"MURAi: Basic test starting..."</li>
+            <li>"MURAi: FOUND 'gago' in page text!"</li>
+            <li>"MURAi: FOUND 'haop' in page text!"</li>
+            <li>"MURAi: FOUND 'putangina' in page text!"</li>
+            <li>"MURAi: Applied basic highlighting"</li>
+        </ul>
+    </div>
+
+    <script>
+        // Add some dynamic content after page loads
+        setTimeout(() => {
+            const newDiv = document.createElement('div');
+            newDiv.className = 'test-section';
+            newDiv.innerHTML = `
+                <h3>Test 4: Dynamic Content</h3>
+                <p>This content was added dynamically and contains gago and putangina.</p>
+            `;
+            document.body.appendChild(newDiv);
+            console.log('Dynamic content added');
+        }, 2000);
+    </script>
+</body>
+</html> 

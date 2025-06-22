@@ -30,13 +30,68 @@ body {
 /* Header */
 .header {
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
+  margin-bottom: 15px;
+  padding: 0 5px;
 }
 
 .logo {
   height: 32px;
+}
+
+/* Account Section */
+.account-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 120px;
+}
+
+.account-section:hover {
+  opacity: 0.8;
+}
+
+.account-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #555;
+}
+
+.account-avatar {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background-color: #333;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 9px;
+  font-weight: bold;
+}
+
+.account-details {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.account-name {
+  font-weight: 500;
+  color: #333;
+  font-size: 11px;
+  line-height: 1.2;
+}
+
+.account-status {
+  font-size: 9px;
+  color: #28a745;
+  line-height: 1.2;
 }
 
 /* Section Titles */
@@ -56,14 +111,20 @@ body {
   border-radius: 8px;
 }
 
+.button-group {
+  display: flex;
+  gap: 0;
+}
+
 .language-btn {
   flex: 1;
-  padding: 10px;
+  padding: 8px 4px;
   border: 1px solid #ddd;
   background-color: white;
   cursor: pointer;
   transition: background-color 0.3s, color 0.3s;
-  font-size: 14px;
+  font-size: 12px;
+  font-weight: 500;
 }
 
 .language-btn:not(:last-child) {
@@ -96,12 +157,13 @@ body {
 
 .sensitivity-btn {
   flex: 1;
-  padding: 10px;
+  padding: 8px 4px;
   border: 1px solid #ddd;
   background-color: white;
   cursor: pointer;
   transition: background-color 0.3s, color 0.3s;
-  font-size: 14px;
+  font-size: 12px;
+  font-weight: 500;
 }
 
 .sensitivity-btn:not(:last-child) {
@@ -479,3 +541,281 @@ button:focus {
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
+
+/* UI Customization Button Selections */
+.ui-btn-group {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.ui-btn {
+  padding: 6px 12px;
+  border: 1px solid #ddd;
+  background-color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 11px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.ui-btn:hover {
+  background-color: #f5f5f5;
+  border-color: #bbb;
+}
+
+.ui-btn.active {
+  background-color: #333;
+  color: white;
+  border-color: #333;
+}
+
+.color-btn {
+  width: 24px;
+  height: 24px;
+  border: 2px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.color-btn:hover {
+  border-color: #999;
+  transform: scale(1.1);
+}
+
+.color-btn.active {
+  border-color: #333;
+  transform: scale(1.1);
+}
+
+.color-btn.active::after {
+  content: '✓';
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  background: #333;
+  color: white;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8px;
+  font-weight: bold;
+}
+
+/* Sample Text Preview */
+.sample-text-section {
+  margin-bottom: 15px;
+  padding: 12px;
+  background-color: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+}
+
+.sample-text-label {
+  font-size: 11px;
+  color: #666;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.sample-text {
+  font-size: 13px;
+  line-height: 1.4;
+  color: #333;
+}
+
+.sample-text.asterisk .flagged {
+  color: #e74c3c;
+  font-weight: bold;
+}
+
+.sample-text.asterisk .flagged::before {
+  content: '';
+}
+
+.sample-text.asterisk .flagged-word {
+  color: #e74c3c;
+  font-weight: bold;
+}
+
+.sample-text.asterisk .flagged-word::before {
+  content: '';
+}
+
+.sample-text.asterisk .flagged-word .letter {
+  color: transparent;
+  font-weight: bold;
+}
+
+.sample-text.asterisk .flagged-word .letter::before {
+  content: '*';
+  color: #e74c3c;
+  font-weight: bold;
+}
+
+.sample-text.asterisk.highlight .flagged-word .letter::before {
+  content: '*';
+  color: #e74c3c;
+  font-weight: bold;
+  background-color: var(--highlight-color, #ffeb3b);
+  padding: 1px 2px;
+  border-radius: 2px;
+}
+
+.sample-text.blur .flagged {
+  filter: blur(2px);
+  color: #999;
+}
+
+.sample-text.highlight .flagged {
+  background-color: var(--highlight-color, #ffeb3b);
+  padding: 1px 2px;
+  border-radius: 2px;
+}
+
+/* Footer */
+.footer {
+  margin-top: 20px;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.footer-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.footer-link {
+  color: #007bff;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.footer-link:hover {
+  color: #0056b3;
+  text-decoration: underline;
+}
+
+.footer-text {
+  font-size: 11px;
+  color: #666;
+  margin: 0;
+}
+
+/* Save Button */
+.save-btn {
+  width: 100%;
+  padding: 12px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.save-btn:hover {
+  background-color: #218838;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
+.save-btn:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Modal Overlay */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+/* Modal */
+.modal {
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px;
+  max-width: 300px;
+  width: 90%;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  text-align: center;
+}
+
+.modal-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.modal-message {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 20px;
+  line-height: 1.4;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.modal-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.modal-btn.confirm {
+  background-color: #28a745;
+  color: white;
+}
+
+.modal-btn.confirm:hover {
+  background-color: #218838;
+}
+
+.modal-btn.cancel {
+  background-color: #6c757d;
+  color: white;
+}
+
+.modal-btn.cancel:hover {
+  background-color: #5a6268;
+}
+

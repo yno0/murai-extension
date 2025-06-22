@@ -1,0 +1,12 @@
+export { default as Icons } from './Icons';
+export { default as Header } from './Header';
+export { default as ProtectionToggle } from './ProtectionToggle';
+export { default as LanguageSelector } from './LanguageSelector';
+export { default as SensitivitySelector } from './SensitivitySelector';
+export { default as OptionsButtons } from './OptionsButtons';
+export { default as WhitelistSection } from './WhitelistSection';
+export { default as UICustomization } from './UICustomization';
+export { default as Status } from './Status';
+export { default as SaveButton } from './SaveButton';
+export { default as Footer } from './Footer';
+export { default as ConfirmationModal } from './ConfirmationModal'; 
