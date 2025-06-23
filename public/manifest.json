@@ -4,7 +4,7 @@
   "description": "Moderates inappropriate words on webpages using NLP",
   "version": "1.0",
   "action": {
-    "default_popup": "popup.html"
+    "default_popup": "index.html"
   },
   "permissions": ["storage", "scripting", "activeTab"],
   "host_permissions": ["<all_urls>"],

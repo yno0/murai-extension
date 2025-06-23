@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MURAi Detection Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .highlight {
+            background-color: yellow;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <h1>MURAi Content Detection Test</h1>
+    <p>This page contains various test cases to verify the MURAi extension's detection capabilities.</p>
+
+    <div class="test-section">
+        <h3>Test Case 1: Filipino Terms</h3>
+        <p>This paragraph contains the word <strong>gago</strong> which should be detected and highlighted.</p>
+        <p>Another sentence with <strong>putangina</strong> and <strong>tangina</strong> for testing.</p>
+    </div>
+
+    <div class="test-section">
+        <h3>Test Case 2: English Terms</h3>
+        <p>Testing English inappropriate terms like <strong>stupid</strong>, <strong>idiot</strong>, and <strong>fuck</strong>.</p>
+        <p>More terms: <strong>damn</strong>, <strong>hell</strong>, <strong>crap</strong>.</p>
+    </div>
+
+    <div class="test-section">
+        <h3>Test Case 3: Mixed Content</h3>
+        <p>This is a normal sentence with no inappropriate content.</p>
+        <p>But this one has <strong>gago</strong> and <strong>stupid</strong> mixed in.</p>
+        <p>And another with <strong>puta</strong> and <strong>fuck</strong>.</p>
+    </div>
+
+    <div class="test-section">
+        <h3>Test Case 4: Case Sensitivity</h3>
+        <p>Testing different cases: <strong>GAGO</strong>, <strong>Gago</strong>, <strong>gago</strong>.</p>
+        <p>And English: <strong>STUPID</strong>, <strong>Stupid</strong>, <strong>stupid</strong>.</p>
+    </div>
+
+    <div class="test-section">
+        <h3>Test Case 5: Dynamic Content</h3>
+        <p>This section will have content added dynamically.</p>
+        <div id="dynamic-content"></div>
+        <button onclick="addDynamicContent()">Add Dynamic Content</button>
+    </div>
+
+    <div class="test-section">
+        <h3>Test Case 6: Normal Content</h3>
+        <p>This paragraph contains only appropriate content and should not trigger any detection.</p>
+        <p>Words like "hello", "world", "test", "content" are all fine.</p>
+    </div>
+
+    <script>
+        function addDynamicContent() {
+            const container = document.getElementById('dynamic-content');
+            const newDiv = document.createElement('div');
+            newDiv.innerHTML = '<p>This is dynamically added content with <strong>gago</strong> and <strong>stupid</strong> terms.</p>';
+            container.appendChild(newDiv);
+        }
+
+        // Add some dynamic content after a delay
+        setTimeout(() => {
+            const container = document.getElementById('dynamic-content');
+            const newDiv = document.createElement('div');
+            newDiv.innerHTML = '<p>Auto-added content with <strong>putangina</strong> for testing.</p>';
+            container.appendChild(newDiv);
+        }, 3000);
+    </script>
+</body>
+</html> 
