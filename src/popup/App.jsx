@@ -1,5 +1,5 @@
 /* global chrome */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Header,
   ProtectionToggle,
@@ -8,11 +8,14 @@ import {
   OptionsButtons,
   WhitelistSection,
   UICustomization,
+  SyncSection,
   Status,
   SaveButton,
   Footer,
   ConfirmationModal
 } from './components';
+import Login from './components/Login.jsx';
+import { syncWithMobileApp, getLastSyncTime, setLastSyncTime as setLastSyncTimeService, getUserEmail, saveSettingsToServer } from '../services/syncService.js';
 
 export default function App() {
   const [language, setLanguage] = useState('Mixed');
@@ -41,11 +44,105 @@ export default function App() {
   // Save and modal state
   const [hasModifications, setHasModifications] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  // Sync state
+  const [lastSyncTime, setLastSyncTime] = useState(null);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncStatus, setSyncStatus] = useState('Not synced');
+  const [userEmail, setUserEmail] = useState('');
+
+  // Sync handler
+  const handleSyncClick = useCallback(async () => {
+    if (isSyncing) return;
+
+    setIsSyncing(true);
+    setSyncStatus('Syncing...');
+
+    try {
+      console.log('🔄 Manual sync initiated...');
+
+      const result = await syncWithMobileApp('manual');
+
+      if (result.success) {
+        // Update sync status
+        const now = new Date();
+        setLastSyncTime(now);
+        setSyncStatus('Synced');
+        setLastSyncTimeService(now); // Also save to localStorage via service
+
+        // If preferences were synced, reload settings
+        if (result.preferences) {
+          await loadSettings();
+          console.log('✅ Settings reloaded after sync');
+        }
+
+        console.log('✅ Sync completed successfully');
+      } else {
+        throw new Error(result.message || 'Sync failed');
+      }
+    } catch (error) {
+      console.error('❌ Sync error:', error);
+      setSyncStatus('Sync failed');
+
+      // Reset status after 3 seconds
+      setTimeout(() => {
+        setSyncStatus('Not synced');
+      }, 3000);
+    } finally {
+      setIsSyncing(false);
+    }
+  }, [isSyncing]);
+
+  // Initialize sync data when logged in
+  const initializeSync = useCallback(async () => {
+    try {
+      // Get last sync time
+      const lastSync = getLastSyncTime();
+      if (lastSync) {
+        setLastSyncTime(lastSync);
+        setSyncStatus('Synced');
+      }
+
+      // Get user email
+      const email = await getUserEmail();
+      if (email) {
+        setUserEmail(email);
+      }
+
+      // Auto-sync on login if no recent sync (older than 1 hour)
+      const now = new Date();
+      if (!lastSync || (now - lastSync) > 3600000) { // 1 hour = 3600000ms
+        console.log('🔄 Auto-syncing on login...');
+        setTimeout(() => handleSyncClick(), 1000); // Delay to avoid UI conflicts
+      }
+    } catch (error) {
+      console.error('Error initializing sync:', error);
+    }
+  }, [handleSyncClick]);
 
   // Load settings on component mount
   useEffect(() => {
-    loadSettings();
-  }, []);
+    // Check localStorage first
+    if (localStorage.getItem('murai_logged_in') === 'true') {
+      setIsLoggedIn(true);
+      loadSettings();
+      initializeSync();
+      return;
+    }
+    // Fallback: check chrome.storage.local
+    if (chrome && chrome.storage && chrome.storage.local) {
+      chrome.storage.local.get(['murai_logged_in'], (result) => {
+        if (result.murai_logged_in === 'true') {
+          setIsLoggedIn(true);
+          initializeSync();
+        }
+        loadSettings();
+      });
+    } else {
+      loadSettings();
+    }
+  }, [initializeSync]);
 
   // Load settings from chrome storage
   const loadSettings = async () => {
@@ -182,11 +279,29 @@ export default function App() {
       highlightColor
     };
 
-    await saveSettings(settings);
-    
-    console.log('Settings saved:', settings);
-    setHasModifications(false);
-    setShowModal(false);
+    try {
+      // Save to Chrome storage first (local)
+      await saveSettings(settings);
+      console.log('✅ Settings saved to Chrome storage');
+
+      // Save to server if logged in
+      if (isLoggedIn) {
+        try {
+          const serverResult = await saveSettingsToServer(settings);
+          console.log('✅ Settings saved to server:', serverResult);
+        } catch (serverError) {
+          console.warn('⚠️ Failed to save to server, but local save succeeded:', serverError.message);
+          // Don't fail the entire save operation if server save fails
+        }
+      }
+
+      console.log('Settings saved:', settings);
+      setHasModifications(false);
+      setShowModal(false);
+    } catch (error) {
+      console.error('❌ Failed to save settings:', error);
+      // You could show an error message to the user here
+    }
   };
 
   const handleCancelSave = () => {
@@ -223,6 +338,10 @@ export default function App() {
     setHighlightColor(newColor);
     trackModification();
   };
+
+  if (!isLoggedIn) {
+    return <Login />;
+  }
 
   return (
     <div className="app-container">
@@ -289,13 +408,16 @@ export default function App() {
         />
       )}
 
-      <Status 
-        protectionEnabled={protectionEnabled}
-        language={language}
-        sensitivity={sensitivity}
+      {/* Sync Section */}
+      <SyncSection
+        lastSyncTime={lastSyncTime}
+        isSyncing={isSyncing}
+        syncStatus={syncStatus}
+        onSyncClick={handleSyncClick}
+        userEmail={userEmail}
       />
 
-      <SaveButton 
+      <SaveButton
         hasModifications={hasModifications}
         onSaveClick={handleSaveClick}
       />

@@ -6,6 +6,7 @@ export { default as SensitivitySelector } from './SensitivitySelector';
 export { default as OptionsButtons } from './OptionsButtons';
 export { default as WhitelistSection } from './WhitelistSection';
 export { default as UICustomization } from './UICustomization';
+export { default as SyncSection } from './SyncSection';
 export { default as Status } from './Status';
 export { default as SaveButton } from './SaveButton';
 export { default as Footer } from './Footer';

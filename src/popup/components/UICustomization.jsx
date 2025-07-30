@@ -1,5 +1,6 @@
 import React from 'react';
 import Icons from './Icons';
+import Tooltip from './Tooltip';
 
 const UICustomization = ({
   flagStyle,
@@ -105,13 +106,13 @@ const UICustomization = ({
           <div className="ui-option-controls">
             <div className="ui-btn-group">
               {colorOptions.map(({ color, title }) => (
-                <button 
-                  key={color}
-                  className={`color-btn ${highlightColor === color ? 'active' : ''}`}
-                  style={{ backgroundColor: color }}
-                  onClick={() => onHighlightColorChange(color)}
-                  title={title}
-                ></button>
+                <Tooltip key={color} content={title}>
+                  <button 
+                    className={`color-btn ${highlightColor === color ? 'active' : ''}`}
+                    style={{ backgroundColor: color }}
+                    onClick={() => onHighlightColorChange(color)}
+                  ></button>
+                </Tooltip>
               ))}
             </div>
           </div>
@@ -127,13 +128,13 @@ const UICustomization = ({
           <div className="ui-option-controls">
             <div className="ui-btn-group">
               {colorOptions.map(({ color, title }) => (
-                <button 
-                  key={color}
-                  className={`color-btn ${highlightColor === color ? 'active' : ''}`}
-                  style={{ backgroundColor: color }}
-                  onClick={() => onHighlightColorChange(color)}
-                  title={title}
-                ></button>
+                <Tooltip key={color} content={title}>
+                  <button 
+                    className={`color-btn ${highlightColor === color ? 'active' : ''}`}
+                    style={{ backgroundColor: color }}
+                    onClick={() => onHighlightColorChange(color)}
+                  ></button>
+                </Tooltip>
               ))}
             </div>
           </div>
