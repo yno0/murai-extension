@@ -45,6 +45,8 @@ class ContentScript {
     this.unmaskedElements = new WeakSet(); // Track elements that have been manually unmasked
     this.unmaskedContent = new Set(); // Track specific unmasked text content
     this.lastUnmaskTime = 0; // Track when last unmask action occurred
+    this.loggedDetections = new Map(); // Track logged detections to prevent duplicates
+    this.detectionCooldown = 3600000; // 1 hour cooldown before logging the same detection again
   }
 
   async init() {
@@ -59,6 +61,19 @@ class ContentScript {
 
     // Make this instance globally accessible for event handlers
     window.muraiContentScript = this;
+
+    // Add global debugging methods
+    window.muraiDebug = {
+      clearDetectionHistory: () => this.clearDetectionHistory(),
+      getDetectionStats: () => this.getDetectionStats(),
+      showLoggedDetections: () => {
+        console.log('MURAi Logged Detections:', Array.from(this.loggedDetections.entries()).map(([key, timestamp]) => ({
+          detection: key,
+          loggedAt: new Date(timestamp).toLocaleString(),
+          minutesAgo: Math.round((Date.now() - timestamp) / 60000)
+        })));
+      }
+    };
 
     // Load settings from storage
     await this.loadSettings();
@@ -411,7 +426,7 @@ class ContentScript {
     return `<span class="murai-flagged-phrase" data-original="${phrase}" data-flagged-term="${flaggedTerm}" style="position:relative; cursor: pointer;">${flaggedPhrase}${actionsMenu}</span>`;
   }
 
-  // Automatically log detected terms to server
+  // Automatically log detected terms to server (with deduplication)
   async logDetectedTerms(foundTerms) {
     if (!foundTerms || foundTerms.length === 0) return;
 
@@ -431,8 +446,18 @@ class ContentScript {
       // Determine site type based on domain
       const siteType = this.determineSiteType(domain);
 
-      // Log each detected term
-      for (const term of foundTerms) {
+      // Filter out terms that have been recently logged
+      const termsToLog = this.filterDuplicateDetections(foundTerms, url);
+
+      if (termsToLog.length === 0) {
+        console.log('MURAi: All terms already logged recently, skipping');
+        return;
+      }
+
+      console.log(`MURAi: Logging ${termsToLog.length} new detections (filtered ${foundTerms.length - termsToLog.length} duplicates)`);
+
+      // Log each new detected term
+      for (const term of termsToLog) {
         // Extract context around the term (up to 200 characters)
         const termIndex = pageText.toLowerCase().indexOf(term.toLowerCase());
         let context = '';
@@ -486,6 +511,9 @@ class ContentScript {
         if (response.ok) {
           const result = await response.json();
           console.log('✅ Detection logged successfully:', result);
+
+          // Mark this detection as logged to prevent future duplicates
+          this.markDetectionAsLogged(term, url);
         } else {
           const errorText = await response.text();
           console.warn('⚠️ Failed to log detection:', errorText);
@@ -650,6 +678,103 @@ class ContentScript {
     };
 
     return languageMap[language] || 'English'; // Default to English
+  }
+
+  // Filter out terms that have been recently logged to prevent duplicates
+  filterDuplicateDetections(terms, url) {
+    const currentTime = Date.now();
+    const domain = new URL(url).hostname;
+
+    return terms.filter(term => {
+      // Create unique key for this detection
+      const detectionKey = this.createDetectionKey(term, domain);
+
+      // Check if this detection was logged recently
+      const lastLogged = this.loggedDetections.get(detectionKey);
+
+      if (!lastLogged) {
+        return true; // Never logged before
+      }
+
+      // Check if cooldown period has passed
+      const timeSinceLogged = currentTime - lastLogged;
+      const shouldLog = timeSinceLogged > this.detectionCooldown;
+
+      if (!shouldLog) {
+        console.log(`MURAi: Skipping duplicate detection: "${term}" on ${domain} (logged ${Math.round(timeSinceLogged / 60000)} minutes ago)`);
+      }
+
+      return shouldLog;
+    });
+  }
+
+  // Create a unique key for detection tracking
+  createDetectionKey(term, domain) {
+    // Normalize term and domain for consistent tracking
+    const normalizedTerm = term.toLowerCase().trim();
+    const normalizedDomain = domain.toLowerCase();
+
+    return `${normalizedTerm}@${normalizedDomain}`;
+  }
+
+  // Mark a detection as logged to prevent future duplicates
+  markDetectionAsLogged(term, url) {
+    const domain = new URL(url).hostname;
+    const detectionKey = this.createDetectionKey(term, domain);
+    const currentTime = Date.now();
+
+    this.loggedDetections.set(detectionKey, currentTime);
+
+    // Clean up old entries to prevent memory leaks
+    this.cleanupOldDetections();
+
+    console.log(`MURAi: Marked detection as logged: "${term}" on ${domain}`);
+  }
+
+  // Clean up old detection entries to prevent memory leaks
+  cleanupOldDetections() {
+    const currentTime = Date.now();
+    const maxAge = this.detectionCooldown * 2; // Keep entries for 2x cooldown period
+
+    let cleanedCount = 0;
+    for (const [key, timestamp] of this.loggedDetections.entries()) {
+      if (currentTime - timestamp > maxAge) {
+        this.loggedDetections.delete(key);
+        cleanedCount++;
+      }
+    }
+
+    if (cleanedCount > 0) {
+      console.log(`MURAi: Cleaned up ${cleanedCount} old detection entries`);
+    }
+  }
+
+  // Clear all detection history (useful for testing or manual reset)
+  clearDetectionHistory() {
+    const count = this.loggedDetections.size;
+    this.loggedDetections.clear();
+    console.log(`MURAi: Cleared ${count} detection history entries`);
+  }
+
+  // Get detection statistics for debugging
+  getDetectionStats() {
+    const currentTime = Date.now();
+    const stats = {
+      totalTracked: this.loggedDetections.size,
+      recentDetections: 0,
+      oldDetections: 0
+    };
+
+    for (const [, timestamp] of this.loggedDetections.entries()) {
+      const age = currentTime - timestamp;
+      if (age < this.detectionCooldown) {
+        stats.recentDetections++;
+      } else {
+        stats.oldDetections++;
+      }
+    }
+
+    return stats;
   }
 
   processElement(element, terms) {
@@ -1341,6 +1466,7 @@ function injectMuraiReportModal(word, flaggedTerm) {
       };
 
       console.log('MURAi: Submitting report:', reportData);
+      console.log('MURAi: Using auth token:', authData.token ? `${authData.token.substring(0, 20)}...` : 'NO TOKEN');
 
       // Send to server
       const response = await fetch('https://murai-server.onrender.com/api/users/reports', {
@@ -1351,6 +1477,9 @@ function injectMuraiReportModal(word, flaggedTerm) {
         },
         body: JSON.stringify(reportData)
       });
+
+      console.log('MURAi: Report response status:', response.status);
+      console.log('MURAi: Report response headers:', Object.fromEntries(response.headers.entries()));
 
       if (response.ok) {
         const result = await response.json();
@@ -1387,7 +1516,13 @@ function injectMuraiReportModal(word, flaggedTerm) {
         };
       } else {
         const errorText = await response.text();
-        throw new Error(`Failed to submit report: ${errorText}`);
+        console.error('❌ Report submission failed:', {
+          status: response.status,
+          statusText: response.statusText,
+          error: errorText,
+          url: response.url
+        });
+        throw new Error(`Failed to submit report (${response.status}): ${errorText}`);
       }
 
     } catch (error) {

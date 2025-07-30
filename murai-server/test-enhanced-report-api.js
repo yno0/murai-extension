@@ -8,8 +8,8 @@ const API_BASE_URL = 'http://localhost:3000/api';
 
 // Test credentials (update with valid test user)
 const testCredentials = {
-  email: 'test@example.com',
-  password: 'testpassword123'
+  email: 'admin@example.com',
+  password: 'admin123'
 };
 
 // Enhanced test data matching extension format

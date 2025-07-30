@@ -1,10 +1,12 @@
 import bcrypt from "bcryptjs";
 import express from "express";
 import { authenticateToken } from "../../middleware/authMiddleware.js";
+import DetectedWord from "../../models/detectedWordModel.js";
 import GroupCode from "../../models/groupCode.js";
 import Group from "../../models/groupModel.js";
 import GroupMember from "../../models/groupUserModel.js";
 import Preference from "../../models/preferenceModel.js";
+import Report from "../../models/reportModel.js";
 import UserInfo from "../../models/userInfoModel.js";
 import User from "../../models/userModel.js";
 
@@ -731,8 +733,35 @@ router.post("/reports", authenticateToken, async (req, res) => {
       });
     }
 
-    // Dynamic import for Report model
-    const { default: Report } = await import("../../models/reportModel.js");
+    // DetectedWord model is imported at the top of the file
+    console.log('✅ Using DetectedWord model for duplicate check');
+
+    // Check for recent duplicate detection (server-side safety)
+    const oneHourAgo = new Date(Date.now() - 3600000); // 1 hour ago
+    const existingDetection = await DetectedWord.findOne({
+      userId: req.user.id,
+      word: word.toLowerCase().trim(),
+      url: url.trim(),
+      createdAt: { $gte: oneHourAgo }
+    });
+
+    if (existingDetection) {
+      console.log('⚠️ Duplicate detection prevented on server side:', {
+        word: word.toLowerCase().trim(),
+        url: url.trim(),
+        lastDetected: existingDetection.createdAt
+      });
+
+      return res.status(200).json({
+        message: "Detection already logged recently",
+        detection: {
+          id: existingDetection._id,
+          word: existingDetection.word,
+          createdAt: existingDetection.createdAt,
+          isDuplicate: true
+        }
+      });
+    }
 
     // Create new report
     const report = new Report({
@@ -746,7 +775,21 @@ router.post("/reports", authenticateToken, async (req, res) => {
       updatedAt: new Date(),
     });
 
+    console.log('Attempting to save report:', {
+      userId: req.user.id,
+      type,
+      description: description.substring(0, 50) + '...',
+      category: category || "general"
+    });
+
     await report.save();
+
+    console.log('✅ Report saved successfully:', {
+      id: report._id,
+      type: report.type,
+      category: report.category,
+      status: report.status
+    });
 
     // Log user activity for report creation
     await logUserActivity(
@@ -778,19 +821,29 @@ router.post("/reports", authenticateToken, async (req, res) => {
       }
     });
   } catch (error) {
-    console.error("Create report error:", error);
+    console.error("❌ Create report error:", error);
+    console.error("Error details:", {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    });
 
     // Log failed report creation
-    await logUserActivity(
-      req.user.id,
-      "report",
-      `Failed to create report: ${error.message}`,
-      "content_moderation"
-    );
+    try {
+      await logUserActivity(
+        req.user.id,
+        "report",
+        `Failed to create report: ${error.message}`,
+        "content_moderation"
+      );
+    } catch (logError) {
+      console.error("Failed to log activity:", logError);
+    }
 
     res.status(500).json({
       message: "Server error",
       error: error.message,
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
 });
@@ -800,8 +853,7 @@ router.get("/reports", authenticateToken, async (req, res) => {
   try {
     const { page = 1, limit = 20, status = "", type = "" } = req.query;
 
-    // Dynamic import for Report model
-    const { default: Report } = await import("../../models/reportModel.js");
+    // Report model is imported at the top of the file
 
     // Build filter
     const filter = { userId: req.user.id };
@@ -897,8 +949,7 @@ router.post("/detected-words", authenticateToken, async (req, res) => {
       });
     }
 
-    // Dynamic import for DetectedWord model
-    const { default: DetectedWord } = await import("../../models/detectedWordModel.js");
+    // DetectedWord model is imported at the top of the file
 
     // Create new detected word entry with extension-provided values
     const detectedWord = new DetectedWord({
@@ -973,8 +1024,7 @@ router.get("/detected-words", authenticateToken, async (req, res) => {
       endDate = ""
     } = req.query;
 
-    // Dynamic import for DetectedWord model
-    const { default: DetectedWord } = await import("../../models/detectedWordModel.js");
+    // DetectedWord model is imported at the top of the file
 
     // Build filter
     const filter = { userId: req.user.id };
